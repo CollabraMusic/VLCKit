@@ -320,7 +320,9 @@ build_universal_static_lib() {
 	spushd MobileVLCKit/ImportedSources/vlc/install-ios-"$OSSTYLE"OS/arm64/lib/vlc/plugins
 	for i in `ls *.a`
 	do
-		VLCMODULES="$i $VLCMODULES"
+        if [ i != "librtpvideo_plugin.a" ]; then
+		  VLCMODULES="$i $VLCMODULES"
+        fi
 	done
 	spopd # vlc/install-ios-"$OSSTYLE"OS/arm64/lib/vlc/plugins
 
@@ -343,7 +345,7 @@ build_universal_static_lib() {
 	doVLCLipo "vlc/" "libcompat.a" "no" $OSSTYLE
 	for i in $VLCMODULES
 	do
-		doVLCLipo "vlc/plugins/" $i "yes" $OSSTYLE
+        doVLCLipo "vlc/plugins/" $i "yes" $OSSTYLE
 	done
 
 	# lipo contrib libraries
@@ -351,7 +353,7 @@ build_universal_static_lib() {
 	spushd contrib/$OSSTYLE-aarch64-apple-darwin11-aarch64/lib
 	for i in `ls *.a`
 	do
-		CONTRIBLIBS="$i $CONTRIBLIBS"
+        CONTRIBLIBS="$i $CONTRIBLIBS"
 	done
 	spopd # contrib/$OSSTYLE-aarch64-apple-darwin11-aarch64/lib
 	for i in $CONTRIBLIBS
