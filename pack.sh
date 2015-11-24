@@ -16,7 +16,7 @@ SKIPLIBVLCCOMPILATION=no
 SCARY=yes
 TVOS=no
 
-TESTEDHASH=3c166d67
+TESTEDHASH=79f6c2f2
 
 usage()
 {
@@ -142,87 +142,9 @@ spushd .
 aspen_root_dir=`pwd`
 spopd
 
-info "Preparing build dirs"
-
-mkdir -p MobileVLCKit/ImportedSources
-
-spushd MobileVLCKit/ImportedSources
-
-if [ "$NONETWORK" != "yes" ]; then
-if ! [ -e vlc ]; then
-git clone git://git.videolan.org/vlc.git vlc
-info "Applying patches to vlc.git"
-cd vlc
-git checkout -B localBranch ${TESTEDHASH}
-git branch --set-upstream-to=origin/master localBranch
-git am ../../patches/*.patch
-if [ $? -ne 0 ]; then
-git am --abort
-info "Applying the patches failed, aborting git-am"
-exit 1
-fi
-cd ..
-else
-cd vlc
-git pull --rebase
-git reset --hard ${TESTEDHASH}
-git am ../../patches/*.patch
-cd ..
-fi
-fi
-
-spopd
-
 #
 # Build time
 #
-
-buildMobileKit() {
-    PLATFORM="$1"
-
-    spushd MobileVLCKit/ImportedSources
-
-    if [ "$SKIPLIBVLCCOMPILATION" != "yes" ]; then
-    spushd vlc/extras/package/ios
-    info "Building vlc"
-    args=""
-    if [ "$VERBOSE" = "yes" ]; then
-        args="${args} -v"
-    fi
-    if [ "$CONFIGURATION" = "Debug" ]; then
-        args="${args} -d"
-    fi
-    if [ "$SCARY" = "no" ]; then
-        args="${args} -w"
-    fi
-    if [ "$TVOS" = "no" ]; then
-		if [ "$PLATFORM" = "iphonesimulator" ]; then
-			args="${args} -s"
-			./build.sh -a i386 ${args} -k "${SDK}" && ./build.sh -a x86_64 ${args} -k "${SDK}"
-		else
-			./build.sh -a armv7 ${args} -k "${SDK}" && ./build.sh -a armv7s ${args} -k "${SDK}" && ./build.sh -a aarch64 ${args} -k "${SDK}"
-		fi
-	else
-		if [ "$PLATFORM" = "iphonesimulator" ]; then
-			args="${args} -s"
-			./build.sh -a x86_64 -t ${args} -k "${SDK}"
-		else
-			./build.sh -a aarch64 -t ${args} -k "${SDK}"
-		fi
-	fi
-
-    spopd
-    fi
-
-    spopd # MobileVLCKit/ImportedSources
-}
-
-if [ "$BUILD_DEVICE" != "no" ]; then
-    buildMobileKit iphoneos
-fi
-if [ "$BUILD_SIMULATOR" != "no" ]; then
-    buildMobileKit iphonesimulator
-fi
 
 DEVICEARCHS=""
 SIMULATORARCHS=""
@@ -320,7 +242,7 @@ build_universal_static_lib() {
 	spushd MobileVLCKit/ImportedSources/vlc/install-ios-"$OSSTYLE"OS/arm64/lib/vlc/plugins
 	for i in `ls *.a`
 	do
-        if [ i != "librtp_plugin.a" ]; then
+        if [ "$i" != "librtp_plugin.a" ]; then
 		  VLCMODULES="$i $VLCMODULES"
         fi
 	done
