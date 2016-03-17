@@ -329,7 +329,9 @@ build_universal_static_lib() {
 	spushd MobileVLCKit/ImportedSources/vlc/install-ios-"$OSSTYLE"OS/arm64/lib/vlc/plugins
 	for i in `ls *.a`
 	do
-		VLCMODULES="$i $VLCMODULES"
+    if [ "$i" != "librtp_plugin.a" ]; then
+       VLCMODULES="$i $VLCMODULES"
+    fi
 	done
 	spopd # vlc/install-ios-"$OSSTYLE"OS/arm64/lib/vlc/plugins
 
