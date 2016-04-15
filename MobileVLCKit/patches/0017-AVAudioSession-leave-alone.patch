@@ -1,0 +1,60 @@
+From dfd31d8db0abf640be7cb5ccb88d0b055dcd72ab Mon Sep 17 00:00:00 2001
+From: BRANDON KOBEL <brandon@brandong.local>
+Date: Fri, 15 Apr 2016 09:31:31 -0400
+Subject: [PATCH] No longer configuring the AVAudioSession
+
+---
+ modules/audio_output/audiounit_ios.m | 15 ---------------
+ 1 file changed, 15 deletions(-)
+
+diff --git a/modules/audio_output/audiounit_ios.m b/modules/audio_output/audiounit_ios.m
+index 0aa9dee..2ada58f 100644
+--- a/modules/audio_output/audiounit_ios.m
++++ b/modules/audio_output/audiounit_ios.m
+@@ -201,8 +201,6 @@ static int StartAnalog(audio_output_t *p_aout, audio_sample_format_t *fmt)
+     if (status != noErr)
+         msg_Warn(p_aout, "failed to set IO mode (%i)", (int)status);
+ 
+-    AVAudioSession *instance = [AVAudioSession sharedInstance];
+-
+     /* Get the current format */
+     AudioStreamBasicDescription streamDescription;
+     streamDescription.mSampleRate = fmt->i_rate;
+@@ -289,12 +287,6 @@ static int StartAnalog(audio_output_t *p_aout, audio_sample_format_t *fmt)
+         TPCircularBufferInit(&p_sys->circular_buffer, AUDIO_BUFFER_SIZE_IN_SECONDS * fmt->i_rate * fmt->i_bytes_per_frame);
+     }
+ 
+-    /* Set audio session to mediaplayback */
+-    NSError *error = nil;
+-    [instance setCategory:AVAudioSessionCategoryPlayback error:&error];
+-    [instance setMode:AVAudioSessionModeMoviePlayback error:&error];
+-    [instance setActive:YES error:&error];
+-
+     /* start the unit */
+     status = AudioOutputUnitStart(p_sys->au_unit);
+     msg_Dbg(p_aout, "audio output unit started: %i", (int)status);
+@@ -322,8 +314,6 @@ static void Stop(audio_output_t *p_aout)
+     }
+     p_sys->i_bytes_per_sample = 0;
+ 
+-    [[AVAudioSession sharedInstance] setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
+-
+     /* clean-up circular buffer */
+     TPCircularBufferCleanup(&p_sys->circular_buffer);
+ }
+@@ -370,12 +360,7 @@ static void Pause (audio_output_t *p_aout, bool pause, mtime_t date)
+         AudioOutputUnitStop(p_sys->au_unit);
+     } else {
+         AudioOutputUnitStart(p_sys->au_unit);
+-
+-        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:nil];
+-        [[AVAudioSession sharedInstance] setMode:AVAudioSessionModeMoviePlayback error:nil];
+     }
+-
+-    [[AVAudioSession sharedInstance] setActive:!pause error:nil];
+ }
+ 
+ static int MuteSet(audio_output_t *p_aout, bool mute)
+-- 
+2.6.3
+
